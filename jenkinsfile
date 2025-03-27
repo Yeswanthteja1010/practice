@@ -1,45 +1,56 @@
 pipeline {
     agent any
-
+    
     stages {
-        stage('Build') {
+        stage('Clone Repository') {
             steps {
-                echo 'Building...'
-                echo 'again'
-                // Add your build commands here, for example:
-                // sh 'mvn clean install'
-            }
-        }
-        stage('Install Dependencies') {
-            steps {
-                echo 'Installing dependencies...'
-                
-                sh 'python3 -m venv venv'
-                sh '. venv/bin/activate && pip install -r requirements.txt'
-            }
-        }
-        stage('Test') {
-            steps {
-                echo 'Testing...'
-                
-                sh '. venv/bin/activate && pytest'
+                git url:'https://github.com/Yeswanthteja1010/practice.git', branch: 'main' 
             }
         }
         
-        stage('Deploy') {
+        stage('Set up Virtual Environment') {
             steps {
-                echo 'Deploying...'
-                
+                script {
+                    sh 'python3 -m venv venv'
+                }
             }
         }
-    }
-
-    post {
-        success {
-            echo 'Pipeline completed successfully!'
+        
+        stage('Install Dependencies') {
+            steps {
+                script {
+                    sh '''
+                        bash -c "source venv/bin/activate"
+                        venv/bin/pip install -r requirements.txt
+                        venv/bin/pip install setuptools
+                    '''
+                }
+            }
         }
-        failure {
-            echo 'Pipeline failed!'
+        
+        stage('Run Tests') {
+            steps {
+		script {
+    			sh '''
+        		bash -c "source venv/bin/activate"
+        		export PYTHONPATH=$(pwd)
+        		venv/bin/pytest pytest/
+    			'''
+}
+            }
+        }
+        
+        stage('Build and Archive') {
+            steps {
+                script {
+			sh """
+    			mkdir -p build
+    			cp -r Jenkinsfile app.py pytest requirements.txt venv build/
+			"""
+
+                }
+                archiveArtifacts artifacts: 'build/**', fingerprint: true
+            }
         }
     }
 }
