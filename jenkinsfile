@@ -10,18 +10,28 @@ pipeline {
                 // sh 'mvn clean install'
             }
         }
+        stage('Install Dependencies') {
+            steps {
+                echo 'Installing dependencies...'
+                // Install dependencies here
+                // Example for Python projects:
+                // sh 'python3 -m venv venv'
+                // sh '. venv/bin/activate && pip install -r requirements.txt'
+            }
+        }
         stage('Test') {
             steps {
                 echo 'Testing...'
-                // Add your test commands here, for example:
-                // sh 'mvn test'
+                // Run your test commands here
+                // Example for Python projects:
+                // sh '. venv/bin/activate && pytest'
             }
         }
+        
         stage('Deploy') {
             steps {
                 echo 'Deploying...'
-                // Add your deploy commands here, for example:
-                // sh 'scp target/*.jar user@server:/path/to/deploy'
+                
             }
         }
     }
